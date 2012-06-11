@@ -1,0 +1,61 @@
+require 'nokogiri'
+require 'open-uri'
+
+$url = url = ARGV.first
+puts $url
+$attendees = []
+while url
+  html = open(url).read
+  uri = URI.parse(url)
+  base = "http://#{uri.host}"
+  doc = Nokogiri::HTML(html)
+  $event_name ||= doc.at('.event-name').inner_text
+  $event_subtitle ||= doc.at('.event-subtitle').inner_text
+  doc.search(".attendee").each do |x|
+    $attendees << {
+      name: x.inner_text, img: x.at('img')['data-src']
+    }
+  end
+  nextpage = doc.at("a[@data-next-page]/@data-next-page")
+  break unless nextpage
+  url = base + nextpage
+  puts "Getting #{url}"
+end
+
+require 'sinatra'
+require 'haml'
+
+class GuestList < Sinatra::Base 
+  template :index do 
+<<END
+%html
+  %head
+    %title= $event_anme
+    :css
+      body { font-family: Helvetica }
+      img { width: 80px; height:80px }
+      .person { float: left; height: 120px; width: 100px; padding: 10px }
+  %body
+    %h2= $event_name
+    %h3= $event_subtitle
+    %p
+      %a{href:$url} Original Event Page
+    - $attendees.each do |x|
+      .person
+        %img{src:x[:img]}
+        = x[:name]
+        
+END
+  end
+
+  get '/' do
+    haml :index
+  end
+
+
+  browsercmd = RUBY_PLATFORM =~ /darwin/ ? 'open' : %w(gnome-open firefox open).detect {|x| `which #{x}` =~ /#{x}/}
+  fork do
+    `sleep 1 && #{browsercmd} http://localhost:4567`
+  end
+  run!
+end

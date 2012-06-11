@@ -1,7 +1,7 @@
 # guestlistapp
 
-This simple utility takes the URL of the a guestlistapp.com
-event, stitches all the pages of attendees, and fires up Sinatra to display it.
+This simple utility takes the URL of a guestlistapp.com event, stitches together all the
+pages of attendees, and fires up Sinatra to display it.
 
 The Sinatra instance will run on port 4567 so make sure the port is available.
 guestlistapp will also attempt to open the result in your default browser.

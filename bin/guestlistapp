@@ -40,6 +40,9 @@ class GuestList < Sinatra::Base
     %h3= $event_subtitle
     %p
       %a{href:$url} Original Event Page
+    %p
+      = $attendees.size
+      people
     - $attendees.each do |x|
       .person
         %img{src:x[:img]}

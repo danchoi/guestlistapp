@@ -9,14 +9,19 @@ while url
   uri = URI.parse(url)
   base = "http://#{uri.host}"
   doc = Nokogiri::HTML(html)
-  $event_name ||= doc.at('.event-name').inner_text
-  $event_subtitle ||= doc.at('.event-subtitle').inner_text
-  doc.search(".attendee").each do |x|
-    $attendees << {
-      name: x.inner_text, img: x.at('img')['data-src']
-    }
+  $event_name ||= doc.at('.leftcolumn h1').inner_text
+  $event_subtitle ||= doc.at('.timeandplace').inner_text
+  doc.xpath("//div[@class='avatar']/..").each do |x|
+    src = x.at(".image-wrapper/img/@src") || x.at("*[@data-image]/@data-image")
+    if src.nil?
+      puts x.to_s
+      exit
+    end
+    item = { name: x.inner_text.strip, img: src }
+
+    $attendees << item
   end
-  nextpage = doc.at("a[@data-next-page]/@data-next-page")
+  nextpage = doc.at("*[@data-next-page]/@data-next-page")
   break unless nextpage
   url = base + nextpage
   puts "Getting #{url}"

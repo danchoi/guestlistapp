@@ -19,6 +19,10 @@ while url
     end
     item = { name: x.inner_text.strip, img: src }
 
+    if $attendees.detect {|x| x[:name] == item[:name]}
+      puts "Dup: #{item[:name]}"
+      next
+    end
     $attendees << item
   end
   nextpage = doc.at("*[@data-next-page]/@data-next-page")
@@ -26,6 +30,8 @@ while url
   url = base + nextpage
   puts "Getting #{url}"
 end
+
+$attendees = $attendees.sort_by {|x| x[:name].downcase}
 
 require 'sinatra'
 require 'haml'
